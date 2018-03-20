@@ -130,8 +130,12 @@ extension Dependency: Scannable {
 					if url.scheme == "https" || url.scheme == "file" {
 						return .success(self.binary(url))
 					} else if url.scheme == nil {
-						let absoluteURL = URL(fileURLWithPath: url.relativePath, isDirectory: false, relativeTo: base).standardizedFileURL
-						return .success(self.binary(absoluteURL))
+						if #available(macOS 10.11, *) {
+							let absoluteURL = URL(fileURLWithPath: url.relativePath, isDirectory: false, relativeTo: base).standardizedFileURL
+							return .success(self.binary(absoluteURL))
+						} else {
+							fatalError("'init(fileURLWithPath:isDirectory:relativeTo:)' is only available on OS X 10.11 or newer")
+						}
 					} else {
 						return .failure(ScannableError(message: "non-https, non-file URL found for dependency type `binary`", currentLine: scanner.currentLine))
 					}
